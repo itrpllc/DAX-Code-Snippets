@@ -1,9 +1,15 @@
 -- Get the max transaction date. Use this to test whether a given date is before, on or after this date.
 -- Remove any filter on Calendar.
 Max Transaction Date = 
-VAR MaxDate = 
+VAR MaxTransactionDateID = 
     CALCULATE(
-        MAX('Financial Summary'[TransactionDateID]),
+        MAX('Financial Summary'[TransactionDateID]),    -- type is INT
         ALL('Calendar')
     )
+VAR MaxDate = -- convert to DATE
+    LOOKUPVALUE(
+        'Calendar'[Full Date],
+        'Calendar'[DateId], MaxTransactionDateID
+    )
 RETURN MaxDate
+
