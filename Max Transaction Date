@@ -1,4 +1,5 @@
 -- Get the max transaction date. Use this to test whether a given date is before, on or after this date.
+-- Remove any filter on Calendar.
 Max Transaction Date = 
 VAR MaxDate = 
     CALCULATE(
