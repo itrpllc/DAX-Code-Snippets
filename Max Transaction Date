@@ -1,0 +1,7 @@
+Max Transaction Date = 
+VAR MaxDate = 
+    CALCULATE(
+        MAX('Financial Summary'[TransactionDateID]),
+        ALL('Calendar')
+    )
+RETURN MaxDate
