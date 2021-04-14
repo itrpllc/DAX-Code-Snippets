@@ -1,0 +1,10 @@
+-- Example: 'Calendar'[Fiscal Week End Date] is on matrix rows; use to get the value from the current row; e.g.
+-- you're writing a measure that needs to know what the value is in the current row.
+Min Fiscal Week End Date = 
+VAR MinFiscalWeekEndDate = 
+CALCULATE(
+    MIN( 'Calendar'[Fiscal Week End Date] ),
+    REMOVEFILTERS(),
+    VALUES('Calendar'[Fiscal Week End Date])
+)
+RETURN MinFiscalWeekEndDate
