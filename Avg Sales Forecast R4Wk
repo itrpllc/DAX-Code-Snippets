@@ -1,0 +1,40 @@
+Avg Sales Forecast R4Wk = 
+-- Rolling 4 week
+-- Return BLANK when Fiscal Week End Date is outside the range of
+-- 
+VAR FiscalWeekNumber = 
+CALCULATETABLE(
+	SUMMARIZE(
+	'Calendar',
+	'Calendar'[Fiscal Week Num Overall]
+	),
+    ALL('Calendar'),
+	'Calendar'[Current Fiscal Week] = TRUE()
+)
+
+-- Get the following list of Fiscal Week End Dates around the current
+-- 'Calendar'[Fiscal Week Num Overall]:
+-- Prior 51 
+-- Next 16 (4 periods)
+VAR FiscalWeekEndDates = 
+CALCULATETABLE(
+	SUMMARIZE(
+        'Calendar',
+        'Calendar'[Fiscal Week End Date]
+	),
+    ALL('Calendar'),
+	AND(
+		'Calendar'[Fiscal Week Num Overall] >= FiscalWeekNumber - 51,
+		'Calendar'[Fiscal Week Num Overall] <= FiscalWeekNumber + 36    -- weeks in 4 periods
+	)
+)
+
+-- Get Fiscal Week End value from visual (row in matrix or x axis in line chart)
+VAR CurrentFiscalWeekEndDate =
+[RM Min Fiscal Week End Date]
+
+RETURN
+IF(
+    CurrentFiscalWeekEndDate IN FiscalWeekEndDates,
+    [Average Sales (Forecast Rolling 4 Week)]
+)
