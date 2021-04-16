@@ -1,0 +1,123 @@
+RM Average Sales Units With Sales > $0 = 
+
+-- CALCULATE [Average Sales] and exclude Units where they have $0 sales in any
+-- Fiscal Week End Date during the relevant period which is:
+-- * Every week end date in the previous fiscal year
+-- * Every week end date in the current fiscal year < the current fiscal week num overall
+
+-- Get the UnitIds. Typically will be filtered to Carl's Jr. or Hardee's.
+VAR Units =
+VALUES('Unit'[UnitId])
+
+-- Get the Fiscal Week Num Overall for the Current Fiscal Week. This will be
+-- an incomplete week (we always want the last completed week). On the Tuesday
+-- morning refresh, the Fiscal Week Num Overall will increment to the next week
+-- which has just begun.
+VAR CurrentFiscalWeekNumber = 
+CALCULATETABLE(
+	SUMMARIZE(
+	'Calendar',
+	'Calendar'[Fiscal Week Num Of Fiscal Year]
+	),
+    ALL('Calendar'),
+	'Calendar'[Current Fiscal Week] = TRUE()
+)
+
+-- Get the current fiscal year
+VAR CurrentFiscalYear =
+CALCULATETABLE(
+	SUMMARIZE(
+	'Calendar',
+	'Calendar'[Fiscal Year Num]
+	),
+    ALL('Calendar'),
+	'Calendar'[Current Fiscal Year] = TRUE()
+)
+
+-- Get the list of Fiscal Week End Dates to check for Sales > $0:
+-- * Every week end date in the previous fiscal year
+-- * Every week end date in the current fiscal year < the current fiscal week num overall
+
+VAR PYFiscalWeekEndDates = 
+    CALCULATETABLE(
+        SUMMARIZE(
+            'Calendar',
+            'Calendar'[Fiscal Week End Date]
+        ),
+        ALL('Calendar'),
+        'Calendar'[Fiscal Year Num] = CurrentFiscalYear - 1
+    )
+
+VAR CYFiscalWeekEndDates =    
+    CALCULATETABLE(
+        SUMMARIZE(
+            'Calendar',
+            'Calendar'[Fiscal Week End Date]
+        ),
+        ALL('Calendar'),
+        AND(
+            'Calendar'[Fiscal Week Num Of Fiscal Year] < CurrentFiscalWeekNumber,
+            'Calendar'[Fiscal Year Num] = CurrentFiscalYear
+        )
+    )
+
+VAR FiscalWeekEndDates =
+UNION(
+    PYFiscalWeekEndDates,
+    CYFiscalWeekEndDates
+)
+
+-- Store the number of Fiscal Week End Dates. This is the number of weeks that a unit
+-- needs to have where Sales are > $0
+VAR NumberOfWeeks =
+COUNTROWS(FiscalWeekEndDates)
+
+-- Calculate Sales for each Unit in the relevant date range.
+VAR WeeklyUnitSales =
+CALCULATETABLE(
+    ADDCOLUMNS(
+        SUMMARIZE( 
+            'Financial Summary',
+            'Unit'[UnitId], 
+            'Calendar'[Fiscal Week End Date]
+        ),
+        "CY Sales", [Sales]
+    ),
+    ALL('Calendar'),
+    FiscalWeekEndDates
+)
+
+-- Keep rows where CY Sales AND PV Sales are > $0.
+VAR UnitSalesFilter = 
+    FILTER( 
+        WeeklyUnitSales, 
+        [CY Sales] > 0
+    )
+
+-- Calculate how many weeks have > $0 sales for each unit.
+VAR UnitsWithSales =
+GROUPBY(
+    UnitSalesFilter,
+    'Unit'[UnitId],
+    "@Weeks", SUMX(CURRENTGROUP(), 1)
+)
+
+-- Keep every Unit where every week sales are > $0.
+VAR UnitFilter =
+FILTER(
+    UnitsWithSales,
+    [@Weeks] = NumberOfWeeks
+)
+
+-- Calculate Average Sales; use UnitFilter as a filter.
+VAR AverageSales = 
+CALCULATE(
+    [Average Sales],
+    UnitFilter
+)
+
+RETURN
+    AverageSales
+
+
+
