@@ -1,5 +1,4 @@
 Avg Sales R4WkSA = 
--- Rolling 4 week seasonally adjusted
 -- Return BLANK when Fiscal Week End Date is outside the range of
 -- 'Calendar'[Rolling 9 Back 4 Forward]
 VAR FiscalWeekEndDates =
@@ -21,3 +20,4 @@ IF(
     MinFiscalWeekEndDate IN FiscalWeekEndDates,
     [Average Sales (Rolling 4 Week Seasonally Adjusted)]
 )
+    
