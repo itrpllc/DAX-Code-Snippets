@@ -1,0 +1,19 @@
+= 
+VAR CurrentDate = TODAY()
+VAR OpenDate = 'Unit'[Open Date]
+VAR CloseDate = 'Unit'[Close Date] 
+VAR DaysOpen =
+	IF(
+		CloseDate > CurrentDate,
+		DATEDIFF(OpenDate, CurrentDate, DAY),
+		-1
+	)
+	
+RETURN	
+ROUNDDOWN(
+	DIVIDE(
+		DaysOpen,
+		28
+	),
+	0
+)
