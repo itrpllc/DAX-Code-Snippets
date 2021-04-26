@@ -1,0 +1,12 @@
+RM Slicer Date Range = 
+-- Get the list of Fiscal Week End Dates that are in a slicer. This measure is in a matrix where
+-- the 'Calendar'[Fiscal Week End Date] is on the rows. 
+VAR DateRange =
+    CALCULATETABLE(
+        SUMMARIZE(
+            'Calendar',
+            'Calendar'[Fiscal Week End Date]
+        ),
+        REMOVEFILTERS('Calendar'[Fiscal Week End Date])
+)
+RETURN COUNTROWS(DateRange)
