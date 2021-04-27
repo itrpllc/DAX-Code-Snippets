@@ -1,0 +1,10 @@
+-- Drop this measure in the Values for a matrix with Fiscal Week End Date on the rows.
+-- It will show the Fiscal Week End Date that is on the row.
+RM FWED Inner Context = 
+CONCATENATEX(
+    VALUES('Calendar'[Fiscal Week End Date]),
+    'Calendar'[Fiscal Week End Date],
+    ",",
+    'Calendar'[Fiscal Week End Date],
+    ASC
+)
