@@ -1,0 +1,22 @@
+TEST FWED Outer Context:=
+
+-- Drop this measure in the values for a matrix.
+-- It will ignore a Fiscal Week End Date on the row and show
+-- the Fiscal Week End Dates selected in a slicer (or filter)
+
+VAR DateRange =
+    CALCULATETABLE(
+        SUMMARIZE(
+            'Calendar',
+            'Calendar'[Fiscal Week End Date]
+        ),
+        ALLSELECTED('Calendar'[Fiscal Week End Date])
+)
+RETURN 
+    CONCATENATEX(
+        DateRange,
+        'Calendar'[Fiscal Week End Date],
+        ",",
+        'Calendar'[Fiscal Week End Date],
+        ASC
+    )
