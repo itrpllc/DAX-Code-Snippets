@@ -1,5 +1,12 @@
 =
 
+/*
+
+Calculated column to set a flag to determine whether the store has Sales > $0 in every
+week of the previous fiscal year. 
+
+*/
+
 VAR CurrentUnitId =
 	'Unit'[UnitId]
 
