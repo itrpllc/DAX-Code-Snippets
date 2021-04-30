@@ -1,0 +1,65 @@
+=
+/*
+
+Calculated column to set a flag to determine whether the store has Sales > $0 in every
+completed week of the current fiscal year. 
+
+*/
+
+VAR CurrentUnitId = 'Unit'[UnitId]
+
+	VAR FiscalWeekNumOverall = 
+	CALCULATETABLE(
+		SUMMARIZE(
+		'Calendar',
+		'Calendar'[Fiscal Week Num Overall]
+		),
+		'Calendar'[Current Fiscal Week] = TRUE()
+	)
+	
+VAR CYFiscalWeekEndDates =
+CALCULATETABLE(
+SUMMARIZE(
+'Calendar',
+'Calendar'[Fiscal Week End Date]
+),
+'Calendar'[Current Fiscal Year] = TRUE(),
+'Calendar'[Fiscal Week Num Overall] < FiscalWeekNumOverall
+)
+
+VAR NumberOfWeeks =
+COUNTROWS(CYFiscalWeekEndDates)
+
+-- Calculate Sales for the Unit in the relevant date range.
+VAR WeeklyUnitSales =
+CALCULATETABLE(
+    ADDCOLUMNS(
+        SUMMARIZE( 
+            'Financial Summary',
+            'Unit'[UnitId], 
+            'Calendar'[Fiscal Week End Date]
+        ),
+        "CY Sales", [Sales]
+    ),
+    'Unit'[UnitId] = CurrentUnitId,
+    CYFiscalWeekEndDates,
+    'Financial Summary Line Type'[Line Type Description] = "Net Sales"
+)
+
+VAR UnitSalesFilter = 
+    FILTER( 
+        WeeklyUnitSales, 
+        [CY Sales] > 0
+    )
+
+VAR WeeksWithSales =
+COUNTROWS(UnitSalesFilter)
+    
+RETURN
+	IF(
+		WeeksWithSales  = NumberOfWeeks,
+		"Y",
+		"N"
+	)
+	    
+
