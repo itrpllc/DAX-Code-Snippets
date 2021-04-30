@@ -1,6 +1,9 @@
 Sales:=
 
 -- trying to implement dynamic check for Unit having Sales > $0 in report period
+--
+-- issue is lineage; return value is the SUM of all 'Financial Summary'[TransactionAmount])
+--
 
     VAR ExcludeZeroSales =
     SELECTEDVALUE('Zero Sales'[Exclude $0 Sales], "No")
