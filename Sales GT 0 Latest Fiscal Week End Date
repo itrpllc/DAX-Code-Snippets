@@ -2,7 +2,8 @@
 
 /*
 
-
+Calculated column to set a flag to determine whether the store has Sales > $0 in the latest
+completed fiscal week end date of the current fiscal year. 
 
 */
 
