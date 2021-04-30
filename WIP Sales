@@ -1,0 +1,53 @@
+Sales:=
+
+-- trying to implement dynamic check for Unit having Sales > $0 in report period
+
+    VAR ExcludeZeroSales =
+    SELECTEDVALUE('Zero Sales'[Exclude $0 Sales], "No")
+
+    VAR FiscalWeekEndDates =
+        CALCULATETABLE(
+            SUMMARIZE(
+                'Calendar',
+                'Calendar'[Fiscal Week End Date]
+            ),
+            ALLSELECTED('Calendar'[Fiscal Week End Date])
+    )
+
+    VAR NumberOfWeeks =
+    COUNTROWS(FiscalWeekEndDates)
+
+    -- Calculate Sales for the relevant date range.
+    VAR WeeklyUnitSales =
+    CALCULATETABLE(
+        ADDCOLUMNS(
+            SUMMARIZE( 
+                'Financial Summary',
+                'Unit'[UnitId], 
+                'Calendar'[Fiscal Week End Date]
+            ),
+            "CY Sales", CALCULATE(SUM('Financial Summary'[TransactionAmount]))
+        ),
+        FiscalWeekEndDates,
+        'Financial Summary Line Type'[Line Type Description] = "Net Sales"
+    )
+
+    VAR UnitSalesFilter = 
+        FILTER( 
+            WeeklyUnitSales, 
+            [CY Sales] > 0
+        )
+
+    VAR WeeksWithSales =
+    COUNTROWS(UnitSalesFilter)
+
+    RETURN
+        IF(
+            ExcludeZeroSales = "No",
+            CALCULATE(SUM('Financial Summary'[TransactionAmount])),
+            CALCULATE(
+                SUM('Financial Summary'[TransactionAmount]),
+                UnitSalesFilter
+            )
+        )
+
