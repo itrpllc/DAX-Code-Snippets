@@ -15,7 +15,7 @@ CALCULATETABLE(
 	SUMMARIZE(
 	'Calendar',
 	'Calendar'[Fiscal Week Num Overall]
-	),[Sales > $0 Previous Fiscal Year]
+	),
 	'Calendar'[Current Fiscal Week] = TRUE()
 )
 
