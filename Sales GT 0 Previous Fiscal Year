@@ -1,47 +1,64 @@
 =
 
-/*
+VAR CurrentUnitId = 'Unit'[UnitId]
 
-Calculated column to set a flag to determine whether the store has Sales > $0 in every
-week of the previous fiscal year. 
-
-*/
-
-VAR CurrentUnitId =
-	'Unit'[UnitId]
-
-VAR FiscalWeekNumOverall = 
+-- Get the current fiscal year
+VAR CurrentFiscalYear =
 CALCULATETABLE(
 	SUMMARIZE(
 	'Calendar',
-	'Calendar'[Fiscal Week Num Overall]
+	'Calendar'[Fiscal Year Num]
 	),
-	'Calendar'[Current Fiscal Week] = TRUE()
+ 	'Calendar'[Current Fiscal Year] = TRUE()
 )
 
-VAR LastCompletedFiscalWeekEndDate =
+-- Get the list of Fiscal Week End Dates to check for Sales > $0:
+-- * Every week end date in the previous fiscal year
+VAR PYFiscalWeekEndDates = 
+    CALCULATETABLE(
+        SUMMARIZE(
+            'Calendar',
+            'Calendar'[Fiscal Week End Date]
+        ),
+        'Calendar'[Fiscal Year Num] = CurrentFiscalYear - 1
+    )
+    
+-- Store the number of Fiscal Week End Dates. This is the number of weeks that a unit
+-- needs to have where Sales are > $0
+VAR NumberOfWeeks =
+COUNTROWS(PYFiscalWeekEndDates)
+
+-- Calculate Sales for each Unit in the relevant date range.
+VAR WeeklyUnitSales =
 CALCULATETABLE(
-	SUMMARIZE(
-	'Calendar',
-	'Calendar'[Fiscal Week End Date]
-	),
-	'Calendar'[Fiscal Week Num Overall] = FiscalWeekNumOverall - 1
-)
-
-VAR SalesAmount =
-CALCULATE(
-	[Sales],
-	'Unit'[UnitId] = CurrentUnitId,
-	'Calendar'[Fiscal Week End Date] = LastCompletedFiscalWeekEndDate,
-	 'Financial Summary Line Type'[Line Type Description] = "Net Sales"
+    ADDCOLUMNS(
+        SUMMARIZE( 
+            'Financial Summary',
+            'Unit'[UnitId], 
+            'Calendar'[Fiscal Week End Date]
+        ),
+        "PY Sales", [Sales]
+    ),
+    'Unit'[UnitId] = CurrentUnitId ,
+    PYFiscalWeekEndDates,
+    'Financial Summary Line Type'[Line Type Description] = "Net Sales"
 
 )
 
-RETURN 
-IF(
-	SalesAmount > 0,
-	"Y",
-	"N"
-)
+VAR UnitSalesFilter = 
+    FILTER( 
+        WeeklyUnitSales, 
+        [PY Sales] > 0
+    )
+    
+RETURN
+	IF(
+		COUNTROWS(UnitSalesFilter) = NumberOfWeeks,
+		"Y",
+		"N"
+	)		    
+    
+    
+
 
 
