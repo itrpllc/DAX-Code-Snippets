@@ -1,0 +1,46 @@
+=
+
+/*
+
+
+
+*/
+
+VAR CurrentUnitId =
+	'Unit'[UnitId]
+
+VAR FiscalWeekNumOverall = 
+CALCULATETABLE(
+	SUMMARIZE(
+	'Calendar',
+	'Calendar'[Fiscal Week Num Overall]
+	),
+	'Calendar'[Current Fiscal Week] = TRUE()
+)
+
+VAR LastCompletedFiscalWeekEndDate =
+CALCULATETABLE(
+	SUMMARIZE(
+	'Calendar',
+	'Calendar'[Fiscal Week End Date]
+	),
+	'Calendar'[Fiscal Week Num Overall] = FiscalWeekNumOverall - 1
+)
+
+VAR SalesAmount =
+CALCULATE(
+	[Sales],
+	'Unit'[UnitId] = CurrentUnitId,
+	'Calendar'[Fiscal Week End Date] = LastCompletedFiscalWeekEndDate,
+	 'Financial Summary Line Type'[Line Type Description] = "Net Sales"
+
+)
+
+RETURN 
+IF(
+	SalesAmount > 0,
+	"Y",
+	"N"
+)
+
+
