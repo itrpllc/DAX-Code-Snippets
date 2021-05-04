@@ -1,0 +1,44 @@
+=
+
+VAR CurrentUnitId =
+'Unit'[UnitId]
+
+VAR LastCompletedFiscalWeekEndDate =
+LOOKUPVALUE(
+	'Calendar'[Last Completed Fiscal Week End Date],
+	'Calendar'[Full Date],
+	TODAY()
+)
+
+VAR Dates =
+CALCULATETABLE(
+	SELECTCOLUMNS(
+		'Calendar',
+		"Full Date", 'Calendar'[Full Date]
+	),
+	'Calendar'[Fiscal Week End Date] = LastCompletedFiscalWeekEndDate
+)
+
+VAR DailySales =
+
+CALCULATETABLE(
+	ADDCOLUMNS(
+		Dates,
+		"Sales Amount", [Sales]
+	),
+	'Unit'[UnitId] = CurrentUnitId,
+	'Financial Summary Line Type'[FinancialSummaryLineTypeId] = 3	-- Net Sales
+)
+
+VAR DaysWithSalesGreaterThanZero =
+FILTER(
+	DailySales,
+	[Sales Amount] > 0
+)	
+
+RETURN
+IF(
+	COUNTROWS(DaysWithSalesGreaterThanZero) = 7,
+	"Y",
+	"N"
+)
