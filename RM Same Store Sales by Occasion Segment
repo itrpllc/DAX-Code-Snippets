@@ -15,8 +15,7 @@ SWITCH(
     7, 141,	  -- EarlyBrkf
     8, 62,    -- On Premise / Dine In
     9, 61,    -- Carryout
-    10,63,    -- Drive Thru
-     -1
+    10,63     -- Drive Thru
 )
 
 RETURN
@@ -24,12 +23,20 @@ IF(
     OccasionSegmentNumber <> 6,
     ROUND(
         CALCULATE(
-            [Average Sales],
-            'Financial Summary'[Comp Sales] = "Y",
+            [Average Sales (With Rollup)],
+            --'Financial Summary'[Comp Sales] = "Y",
             'Financial Summary Line Type'[FinancialSummaryLineTypeId] = LineTypeId,
             'Unit'[Sales > $0 Every Day Last Completed Fiscal Week End Date] = "Y" 
         ),
         0
     ),
-    0
-)
+    ROUND(
+        CALCULATE(
+            [Average Sales (With Rollup)],
+            --'Financial Summary'[Comp Sales] = "Y",
+            'Financial Summary Line Type'[FinancialSummaryLineTypeId] = 140 ||
+                'Financial Summary Line Type'[FinancialSummaryLineTypeId] = 146,
+            'Unit'[Sales > $0 Every Day Last Completed Fiscal Week End Date] = "Y" 
+        ),
+        0
+    ))
