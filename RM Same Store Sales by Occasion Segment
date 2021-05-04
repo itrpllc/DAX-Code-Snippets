@@ -1,0 +1,35 @@
+RM Same Store Sales = 
+
+VAR OccasionSegmentNumber =
+    MAX('Occasion Segment'[OccasionSegmentNumber])
+
+VAR LineTypeId =
+SWITCH(
+    OccasionSegmentNumber,
+    1, 3,     -- Net Sales
+    2, 142,	  --  Breakfast 
+    3, 143,	  -- Lunch
+    4, 144,	  -- Afternoon
+    5, 145,	  -- Dinner
+    6, -1,    -- 146	Late Night + 140	Graveyard
+    7, 141,	  -- EarlyBrkf
+    8, 62,    -- On Premise / Dine In
+    9, 61,    -- Carryout
+    10,63,    -- Drive Thru
+     -1
+)
+
+RETURN
+IF(
+    OccasionSegmentNumber <> 6,
+    ROUND(
+        CALCULATE(
+            [Average Sales],
+            'Financial Summary'[Comp Sales] = "Y",
+            'Financial Summary Line Type'[FinancialSummaryLineTypeId] = LineTypeId,
+            'Unit'[Sales > $0 Every Day Last Completed Fiscal Week End Date] = "Y" 
+        ),
+        0
+    ),
+    0
+)
