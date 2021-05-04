@@ -1,0 +1,13 @@
+=
+
+VAR LastCompletedFiscalWeekEndDate =
+CALCULATETABLE(
+	SELECTCOLUMNS(
+		'Calendar',
+		"Week Date",  DATEADD('Calendar'[Full Date], WEEKDAY('Calendar'[Full Date], 12) * -1, DAY)
+	)
+)
+RETURN
+LastCompletedFiscalWeekEndDate   
+ 
+
