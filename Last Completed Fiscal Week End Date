@@ -8,6 +8,6 @@ CALCULATETABLE(
 	)
 )
 RETURN
-LastCompletedFiscalWeekEndDate   
- 
+LastCompletedFiscalWeekEndDate 
+
 
